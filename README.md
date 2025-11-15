@@ -71,6 +71,41 @@ Prayer times are stored locally in:
 - HTML/CSS/JavaScript
 - electron-builder
 
+##Complete Flow Diagram
+1. App Starts
+   ↓
+2. initDataFile() → Creates prayer-times.json if missing
+   ↓
+3. createTray() → Creates system tray icon with menu
+   ↓
+4. startTimeCheck() → Starts 60-second interval
+   ↓
+5. checkPrayerTime() → Every minute:
+   ├─ Get current time (HH:MM)
+   ├─ Load prayer times from file
+   └─ If match → createOverlay()
+   ↓
+6. createOverlay() → Creates fullscreen window
+   ├─ Loads overlay.html
+   ├─ User sees prayer message
+   └─ User can close via ESC or button
+   ↓
+7. closeOverlay() → IPC sends 'close-overlay'
+   └─ Main process closes window
+
+Settings Flow:
+User clicks "Settings" in tray
+   ↓
+createSettingsWindow() → Opens settings window
+   ↓
+loadPrayerTimes() → Fetches current times via IPC
+   ↓
+User edits times → Clicks Save
+   ↓
+savePrayerTimes() → Saves via IPC
+   ↓
+Main process writes to file → Success message shown
+
 ## License
 
 Not configured yet.
