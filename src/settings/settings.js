@@ -1,6 +1,9 @@
 // Get DOM elements
+const fajrInput = document.getElementById('fajrTime');
 const zuhrInput = document.getElementById('zuhrTime');
 const asrInput = document.getElementById('asrTime');
+const maghribInput = document.getElementById('maghribTime');
+const ishaInput = document.getElementById('ishaTime');
 const saveButton = document.getElementById('saveButton');
 const cancelButton = document.getElementById('cancelButton');
 const messageDiv = document.getElementById('message');
@@ -9,8 +12,11 @@ const messageDiv = document.getElementById('message');
 async function loadPrayerTimes() {
   try {
     const times = await window.electronAPI.getPrayerTimes();
+    fajrInput.value = times.fajr;
     zuhrInput.value = times.zuhr;
     asrInput.value = times.asr;
+    maghribInput.value = times.maghrib;
+    ishaInput.value = times.isha;
   } catch (error) {
     showMessage('Error loading prayer times', 'error');
   }
@@ -27,10 +33,13 @@ function showMessage(text, type) {
 }
 
 async function savePrayerTimes() {
+  const fajr = fajrInput.value;
   const zuhr = zuhrInput.value;
   const asr = asrInput.value;
+  const maghrib = maghribInput.value;
+  const isha = ishaInput.value;
   
-  if (!zuhr || !asr) {
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
     showMessage('Please fill in all time fields', 'error');
     return;
   }
