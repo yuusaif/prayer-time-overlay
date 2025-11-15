@@ -46,8 +46,11 @@ async function savePrayerTimes() {
   
   try {
     const success = await window.electronAPI.savePrayerTimes({
+      fajr: fajr,
       zuhr: zuhr,
-      asr: asr
+      asr: asr,
+      maghrib: maghrib,
+      isha: isha
     });
     
     if (success) {

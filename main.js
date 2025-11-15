@@ -15,7 +15,7 @@ function initDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
     const defaultData = {
       fajr: "05:00",
-      zuhr: "01:10",
+      zuhr: "13:10",
       asr: "16:00",
       maghrib: "17:30",
       isha: "19:30"
@@ -31,7 +31,7 @@ function getPrayerTimes() {
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading prayer times:', error);
-    return {fajr:"5:00", zuhr: "13:00", asr: "16:30", maghrib: "17:30", isha: "19:30" };
+    return {fajr:"5:00", zuhr: "13:10", asr: "16:00", maghrib: "17:30", isha: "19:30" };
   }
 }
 
