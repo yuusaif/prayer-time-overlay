@@ -10,6 +10,7 @@ let checkInterval = null;
 const DATA_FILE = path.join(app.getPath('userData'), 'prayer-times.json');
 
 // Initialize data file if it doesn't exist
+//Location: platform-specific (Windows: %APPDATA%, macOS: ~/Library/Application Support, Linux: ~/.config)
 function initDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
     const defaultData = {
@@ -80,7 +81,6 @@ function createOverlay() {
   });
 }
 
-// Create settings window
 function createSettingsWindow() {
   if (settingsWindow) {
     settingsWindow.focus();
@@ -89,7 +89,7 @@ function createSettingsWindow() {
 
   settingsWindow = new BrowserWindow({
     width: 500,
-    height: 400,
+    height: 700,
     resizable: false,
     maximizable: false,
     webPreferences: {
@@ -118,7 +118,6 @@ function checkPrayerTime() {
   }
 }
 
-// Start time checking interval
 function startTimeCheck() {
   // Check every minute
   checkInterval = setInterval(checkPrayerTime, 60000);
@@ -126,12 +125,9 @@ function startTimeCheck() {
   checkPrayerTime();
 }
 
-// Create tray icon
+// Create system tray with icon
 function createTray() {
-  // Use a default icon path - you should replace this with your actual icon
   const iconPath = path.join(__dirname, 'src', 'assets', 'icon.png');
-  
-  // If icon doesn't exist, create a simple one or use electron's default
   tray = new Tray(iconPath);
   
   const contextMenu = Menu.buildFromTemplate([
@@ -165,7 +161,7 @@ function createTray() {
   tray.setContextMenu(contextMenu);
 }
 
-// IPC Handlers
+// Inter Process Communication Handlers
 ipcMain.handle('get-prayer-times', () => {
   return getPrayerTimes();
 });
@@ -180,7 +176,7 @@ ipcMain.on('close-overlay', () => {
   }
 });
 
-// App ready
+// App Initialization
 app.whenReady().then(() => {
   initDataFile();
   createTray();

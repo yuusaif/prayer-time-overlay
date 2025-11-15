@@ -16,7 +16,6 @@ async function loadPrayerTimes() {
   }
 }
 
-// Show message to user
 function showMessage(text, type) {
   messageDiv.textContent = text;
   messageDiv.className = `message ${type}`;
@@ -27,7 +26,6 @@ function showMessage(text, type) {
   }, 3000);
 }
 
-// Save prayer times
 async function savePrayerTimes() {
   const zuhr = zuhrInput.value;
   const asr = asrInput.value;
@@ -53,7 +51,6 @@ async function savePrayerTimes() {
   }
 }
 
-// Close window
 function closeWindow() {
   window.close();
 }

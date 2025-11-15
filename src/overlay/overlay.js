@@ -1,4 +1,3 @@
-// Close overlay function
 function closeOverlay() {
   window.electronAPI.closeOverlay();
 }
