@@ -15,12 +15,14 @@
 
 - 🕌 **Full-Screen Overlay** - Displays prayer reminders on all screens simultaneously
 - ⏰ **Custom Prayer Times** - Configure Fajr, Zuhr, Asr, Maghrib, and Isha times
-- ᎗ **System Tray Integration** - Runs silently in the background
+- 👥 **Admin/User Roles** - Centralized control with admin and user permission levels
+- 📢 **Broadcast Messages** - Admin can send custom messages via overlay at any time
+- 🔔 **System Tray Integration** - Runs silently in the background
 - 🚀 **Auto-Start on Boot** - Option to start automatically after reboot
 - ⌨️ **Quick Dismiss** - Press ESC or click to close overlay
 - 🎨 **Modern UI** - Clean, beautiful interface with smooth animations
 - 🌍 **Cross-Platform** - Works on Windows, macOS, and Linux
-- 🔔 **Helpful Notifications** - To remind us to get ready, perform Udhu
+- 📱 **Helpful Notifications** - To remind us to get ready, perform Udhu
 
 ---
 
@@ -50,6 +52,25 @@ npm start
 
 The overlay will appear automatically at the configured prayer times.
 
+### Admin Mode
+
+To enable admin features (edit settings, broadcast messages):
+
+1. Edit the admin config file (see [ADMIN_SETUP.md](ADMIN_SETUP.md) for locations)
+2. Set `"isAdmin": true` in `admin-config.json`
+3. Restart the app
+4. Admin menu options will appear in the tray menu
+
+**Admin Features:**
+- ✅ Edit prayer times centrally
+- ✅ Change auto-start settings
+- ✅ Broadcast custom messages via overlay
+
+**User Mode (Default):**
+- 👀 View-only access to settings
+- ❌ Cannot modify prayer times
+- ❌ Cannot broadcast messages
+
 ---
 
 ## 📦 Building
@@ -72,9 +93,17 @@ Built files will be in the `dist/` directory.
 
 Prayer times and settings are stored locally:
 
+**Prayer Times:**
 - **Windows**: `%APPDATA%/prayer-time-overlay/prayer-times.json`
 - **macOS**: `~/Library/Application Support/prayer-time-overlay/prayer-times.json`
 - **Linux**: `~/.config/prayer-time-overlay/prayer-times.json`
+
+**Admin Config:**
+- **Windows**: `%APPDATA%/prayer-time-overlay/admin-config.json`
+- **macOS**: `~/Library/Application Support/prayer-time-overlay/admin-config.json`
+- **Linux**: `~/.config/prayer-time-overlay/admin-config.json`
+
+See [ADMIN_SETUP.md](ADMIN_SETUP.md) for detailed admin setup instructions.
 
 ---
 
