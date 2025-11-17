@@ -15,7 +15,10 @@
     "reminder",
     "overlay"
   ],
-  "author": "Md. Saif Alvi",
+  "author": {
+    "name": "Md. Saif Alvi",
+    "email": "alvi676@gmail.com"
+  },
   "license": "",
   "devDependencies": {
     "electron": "^28.0.0",
@@ -23,7 +26,7 @@
   },
   "build": {
     "appId": "com.prayertime.overlay",
-    "productName": "Prayer Time Overlay",
+    "productName": "prayer-time-overlay",
     "directories": {
       "output": "dist"
     },
@@ -37,11 +40,13 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/assets/icon.png"
+      "icon": "src/assets/icon.png",
+      "sign": false,
+      "signingHashAlgorithms": []
     },
     "mac": {
       "target": [
-        "dmg"
+        "zip"
       ],
       "icon": "src/assets/icon.png",
       "category": "public.app-category.utilities"
@@ -52,7 +57,12 @@
         "deb"
       ],
       "icon": "src/assets/icon.png",
-      "category": "Utility"
+      "category": "Utility",
+      "executableName": "prayer-time-overlay",
+      "desktop": {
+        "Name": "Prayer Time Overlay",
+        "Comment": "Full-screen prayer time reminder overlay"
+      }
     }
   }
 }
