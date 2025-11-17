@@ -12,6 +12,8 @@ const messageDiv = document.getElementById('message');
 // Load existing prayer times and settings when page loads
 async function loadPrayerTimes() {
   try {
+    const isAdminUser = await window.electronAPI.isAdmin();
+    
     const times = await window.electronAPI.getPrayerTimes();
     fajrInput.value = times.fajr;
     zuhrInput.value = times.zuhr;
@@ -22,6 +24,26 @@ async function loadPrayerTimes() {
     // Load auto-start setting
     const autoStart = await window.electronAPI.getAutoStart();
     autoStartToggle.checked = autoStart;
+    
+    // Disable editing if not admin
+    if (!isAdminUser) {
+      fajrInput.disabled = true;
+      zuhrInput.disabled = true;
+      asrInput.disabled = true;
+      maghribInput.disabled = true;
+      ishaInput.disabled = true;
+      autoStartToggle.disabled = true;
+      saveButton.disabled = true;
+      saveButton.textContent = 'View Only (Admin Required)';
+      saveButton.style.opacity = '0.6';
+      saveButton.style.cursor = 'not-allowed';
+      
+      // Update title to show view-only mode
+      const title = document.querySelector('h1');
+      if (title) {
+        title.textContent = 'Prayer Time Settings (View Only)';
+      }
+    }
   } catch (error) {
     showMessage('Error loading prayer times', 'error');
   }
@@ -38,6 +60,13 @@ function showMessage(text, type) {
 }
 
 async function savePrayerTimes() {
+  // Check if user is admin
+  const isAdminUser = await window.electronAPI.isAdmin();
+  if (!isAdminUser) {
+    showMessage('Only admin can save settings', 'error');
+    return;
+  }
+  
   const fajr = fajrInput.value;
   const zuhr = zuhrInput.value;
   const asr = asrInput.value;
@@ -69,6 +98,13 @@ async function savePrayerTimes() {
 }
 
 async function saveAutoStart() {
+  // Check if user is admin
+  const isAdminUser = await window.electronAPI.isAdmin();
+  if (!isAdminUser) {
+    showMessage('Only admin can change auto-start setting', 'error');
+    return;
+  }
+  
   try {
     const enabled = autoStartToggle.checked;
     const success = await window.electronAPI.setAutoStart(enabled);
