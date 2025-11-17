@@ -262,18 +262,41 @@ function createTray() {
     
     tray = new Tray(iconPath);
     
-    const contextMenu = Menu.buildFromTemplate([
+    const adminMode = isAdmin();
+    const menuItems = [
       {
         label: 'Prayer Time Overlay',
         enabled: false
       },
-      { type: 'separator' },
-      {
-        label: 'Settings',
+      { type: 'separator' }
+    ];
+
+    // Admin-only items
+    if (adminMode) {
+      menuItems.push({
+        label: '⚙️ Settings (Admin)',
         click: () => {
           createSettingsWindow();
         }
-      },
+      });
+      menuItems.push({
+        label: '📢 Broadcast Message',
+        click: () => {
+          createBroadcastWindow();
+        }
+      });
+      menuItems.push({ type: 'separator' });
+    } else {
+      menuItems.push({
+        label: 'Settings (View Only)',
+        click: () => {
+          createSettingsWindow();
+        }
+      });
+      menuItems.push({ type: 'separator' });
+    }
+
+    menuItems.push(
       {
         label: 'Test Overlay',
         click: () => {
@@ -289,7 +312,9 @@ function createTray() {
           app.quit();
         }
       }
-    ]);
+    );
+    
+    const contextMenu = Menu.buildFromTemplate(menuItems);
 
     tray.setToolTip('Prayer Time Overlay');
     tray.setContextMenu(contextMenu);
@@ -324,6 +349,22 @@ ipcMain.handle('set-auto-start', (event, enabled) => {
   return setAutoStart(enabled);
 });
 
+ipcMain.handle('is-admin', () => {
+  return isAdmin();
+});
+
+ipcMain.handle('broadcast-message', (event, message) => {
+  if (!isAdmin()) {
+    return { success: false, error: 'Only admin can broadcast messages' };
+  }
+  try {
+    createOverlay('Admin Message', '', message);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.on('close-overlay', () => {
   if (overlayWindow) {
     overlayWindow.close();
@@ -333,6 +374,7 @@ ipcMain.on('close-overlay', () => {
 // App Initialization
 app.whenReady().then(() => {
   try {
+    initAdminConfig();
     initDataFile();
     
     // Set auto-start based on saved preference
