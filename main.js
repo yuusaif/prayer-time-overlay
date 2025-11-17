@@ -184,38 +184,78 @@ function startTimeCheck() {
 
 // Create system tray with icon
 function createTray() {
-  const iconPath = path.join(__dirname, 'src', 'assets', 'icon.png');
-  tray = new Tray(iconPath);
-  
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Prayer Time Overlay',
-      enabled: false
-    },
-    { type: 'separator' },
-    {
-      label: 'Settings',
-      click: () => {
-        createSettingsWindow();
+  try {
+    // Determine icon path based on whether app is packaged or in development
+    let iconPath;
+    
+    if (app.isPackaged) {
+      // In packaged app, resources are in process.resourcesPath
+      iconPath = path.join(process.resourcesPath, 'src', 'assets', 'icon.png');
+      
+      // If not found, try app path (for AppImage or other formats)
+      if (!fs.existsSync(iconPath)) {
+        iconPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'src', 'assets', 'icon.png');
       }
-    },
-    {
-      label: 'Test Overlay',
-      click: () => {
-        createOverlay();
+      
+      // Last resort: try app path
+      if (!fs.existsSync(iconPath)) {
+        iconPath = path.join(app.getAppPath(), 'src', 'assets', 'icon.png');
       }
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit',
-      click: () => {
-        app.quit();
-      }
+    } else {
+      // In development, use __dirname
+      iconPath = path.join(__dirname, 'src', 'assets', 'icon.png');
     }
-  ]);
+    
+    // If icon doesn't exist, we can't create tray - will be caught in catch block
+    if (!fs.existsSync(iconPath)) {
+      throw new Error(`Icon not found. Tried: ${iconPath}`);
+    }
+    
+    tray = new Tray(iconPath);
+    
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Prayer Time Overlay',
+        enabled: false
+      },
+      { type: 'separator' },
+      {
+        label: 'Settings',
+        click: () => {
+          createSettingsWindow();
+        }
+      },
+      {
+        label: 'Test Overlay',
+        click: () => {
+          const prayerTimes = getPrayerTimes();
+          // Show Zuhr as default for testing
+          createOverlay('Zuhr', prayerTimes.zuhr || '13:00');
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          app.quit();
+        }
+      }
+    ]);
 
-  tray.setToolTip('Prayer Time Overlay');
-  tray.setContextMenu(contextMenu);
+    tray.setToolTip('Prayer Time Overlay');
+    tray.setContextMenu(contextMenu);
+    
+    // Handle tray click (some Linux DEs use single click instead of right-click)
+    tray.on('click', () => {
+      createSettingsWindow();
+    });
+    
+  } catch (error) {
+    console.error('Failed to create system tray:', error);
+    // Fallback: Show settings window if tray creation fails
+    console.log('System tray not available, showing settings window instead');
+    createSettingsWindow();
+  }
 }
 
 // Inter Process Communication Handlers
