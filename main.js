@@ -6,9 +6,48 @@ const { scheduleNotifications, clearScheduledNotifications } = require('./src/no
 let tray = null;
 let overlayWindow = null;
 let settingsWindow = null;
+let broadcastWindow = null;
 let checkInterval = null;
 
 const DATA_FILE = path.join(app.getPath('userData'), 'prayer-times.json');
+const ADMIN_CONFIG_FILE = path.join(app.getPath('userData'), 'admin-config.json');
+
+// Initialize admin config file
+//Location: platform-specific (Windows: %APPDATA%, macOS: ~/Library/Application Support, Linux: ~/.config)
+function initAdminConfig() {
+  if (!fs.existsSync(ADMIN_CONFIG_FILE)) {
+    const defaultConfig = {
+      isAdmin: false  // Set to true for admin mode in the admin-config.json file
+    };
+    fs.writeFileSync(ADMIN_CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+  }
+}
+
+// Check if current user is admin
+function isAdmin() {
+  try {
+    if (!fs.existsSync(ADMIN_CONFIG_FILE)) {
+      return false;
+    }
+    const config = JSON.parse(fs.readFileSync(ADMIN_CONFIG_FILE, 'utf8'));
+    return config.isAdmin === true;
+  } catch (error) {
+    console.error('Error reading admin config:', error);
+    return false;
+  }
+}
+
+// Set admin mode
+function setAdminMode(enabled) {
+  try {
+    const config = { isAdmin: enabled };
+    fs.writeFileSync(ADMIN_CONFIG_FILE, JSON.stringify(config, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error setting admin mode:', error);
+    return false;
+  }
+}
 
 // Initialize data file if it doesn't exist
 //Location: platform-specific (Windows: %APPDATA%, macOS: ~/Library/Application Support, Linux: ~/.config)
@@ -97,25 +136,38 @@ function savePrayerTimes(times) {
   }
 }
 
-// Create overlay window
-function createOverlay(prayerName = 'Prayer Time', prayerTime = '') {
+// Create overlay window (can be used for prayer times or custom messages)
+function createOverlay(prayerName = 'Prayer Time', prayerTime = '', customMessage = '') {
   if (overlayWindow) {
     overlayWindow.show();
     // Update prayer info if window already exists
     const nameStr = JSON.stringify(String(prayerName || 'Prayer Time'));
     const timeStr = JSON.stringify(String(prayerTime || ''));
-    overlayWindow.webContents.executeJavaScript(`
-      (function() {
-        try {
-          var nameEl = document.getElementById('prayerName');
-          var timeEl = document.getElementById('prayerTime');
-          if (nameEl) nameEl.textContent = ${nameStr};
-          if (timeEl) timeEl.textContent = ${timeStr};
-        } catch(e) {
-          console.error('Error updating prayer info:', e);
-        }
-      })();
-    `).catch(err => console.error('Error executing script:', err));
+    const msgStr = JSON.stringify(String(customMessage || ''));
+      overlayWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            var nameEl = document.getElementById('prayerName');
+            var timeEl = document.getElementById('prayerTime');
+            var msgEl = document.getElementById('customMessage');
+            var defaultMsgEl = document.getElementById('defaultMessage');
+            if (nameEl) nameEl.textContent = ${nameStr};
+            if (timeEl) timeEl.textContent = ${timeStr};
+            if (msgEl) {
+              if (${msgStr}) {
+                msgEl.textContent = ${msgStr};
+                msgEl.style.display = 'block';
+                if (defaultMsgEl) defaultMsgEl.style.display = 'none';
+              } else {
+                msgEl.style.display = 'none';
+                if (defaultMsgEl) defaultMsgEl.style.display = 'block';
+              }
+            }
+          } catch(e) {
+            console.error('Error updating prayer info:', e);
+          }
+        })();
+      `).catch(err => console.error('Error executing script:', err));
     return;
   }
 
@@ -147,16 +199,29 @@ function createOverlay(prayerName = 'Prayer Time', prayerTime = '') {
     setTimeout(() => {
       const nameStr = JSON.stringify(String(prayerName || 'Prayer Time'));
       const timeStr = JSON.stringify(String(prayerTime || ''));
+      const msgStr = JSON.stringify(String(customMessage || ''));
       overlayWindow.webContents.executeJavaScript(`
         (function() {
           try {
             var nameEl = document.getElementById('prayerName');
             var timeEl = document.getElementById('prayerTime');
+            var msgEl = document.getElementById('customMessage');
+            var defaultMsgEl = document.getElementById('defaultMessage');
             if (nameEl) {
               nameEl.textContent = ${nameStr};
             }
             if (timeEl) {
               timeEl.textContent = ${timeStr};
+            }
+            if (msgEl) {
+              if (${msgStr}) {
+                msgEl.textContent = ${msgStr};
+                msgEl.style.display = 'block';
+                if (defaultMsgEl) defaultMsgEl.style.display = 'none';
+              } else {
+                msgEl.style.display = 'none';
+                if (defaultMsgEl) defaultMsgEl.style.display = 'block';
+              }
             }
           } catch(e) {
             console.error('Error setting prayer info:', e);
@@ -198,6 +263,32 @@ function createSettingsWindow() {
 
   settingsWindow.on('closed', () => {
     settingsWindow = null;
+  });
+}
+
+function createBroadcastWindow() {
+  if (broadcastWindow) {
+    broadcastWindow.focus();
+    return;
+  }
+
+  broadcastWindow = new BrowserWindow({
+    width: 500,
+    height: 500,
+    resizable: false,
+    maximizable: false,
+    title: 'Broadcast Message',
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  broadcastWindow.loadFile(path.join(__dirname, 'src', 'broadcast', 'broadcast.html'));
+
+  broadcastWindow.on('closed', () => {
+    broadcastWindow = null;
   });
 }
 
@@ -301,7 +392,6 @@ function createTray() {
         label: 'Test Overlay',
         click: () => {
           const prayerTimes = getPrayerTimes();
-          // Show Zuhr as default for testing
           createOverlay('Zuhr', prayerTimes.zuhr || '13:00');
         }
       },
