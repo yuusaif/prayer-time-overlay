@@ -5,5 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   getPrayerTimes: () => ipcRenderer.invoke('get-prayer-times'),
   savePrayerTimes: (times) => ipcRenderer.invoke('save-prayer-times', times),
+  getAutoStart: () => ipcRenderer.invoke('get-auto-start'),
+  setAutoStart: (enabled) => ipcRenderer.invoke('set-auto-start', enabled),
   closeOverlay: () => ipcRenderer.send('close-overlay')
 });
