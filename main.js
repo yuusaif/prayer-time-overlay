@@ -181,9 +181,24 @@ ipcMain.on('close-overlay', () => {
 
 // App Initialization
 app.whenReady().then(() => {
-  initDataFile();
-  createTray();
-  startTimeCheck();
+  try {
+    initDataFile();
+    createTray();
+    startTimeCheck();
+  } catch (error) {
+    console.error('Error during app initialization:', error);
+    // Try to show settings window as fallback
+    createSettingsWindow();
+  }
+});
+
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 // Prevent app from quitting when all windows are closed
