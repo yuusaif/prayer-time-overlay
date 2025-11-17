@@ -4,11 +4,12 @@ const zuhrInput = document.getElementById('zuhrTime');
 const asrInput = document.getElementById('asrTime');
 const maghribInput = document.getElementById('maghribTime');
 const ishaInput = document.getElementById('ishaTime');
+const autoStartToggle = document.getElementById('autoStartToggle');
 const saveButton = document.getElementById('saveButton');
 const cancelButton = document.getElementById('cancelButton');
 const messageDiv = document.getElementById('message');
 
-// Load existing prayer times when page loads
+// Load existing prayer times and settings when page loads
 async function loadPrayerTimes() {
   try {
     const times = await window.electronAPI.getPrayerTimes();
@@ -17,6 +18,10 @@ async function loadPrayerTimes() {
     asrInput.value = times.asr;
     maghribInput.value = times.maghrib;
     ishaInput.value = times.isha;
+    
+    // Load auto-start setting
+    const autoStart = await window.electronAPI.getAutoStart();
+    autoStartToggle.checked = autoStart;
   } catch (error) {
     showMessage('Error loading prayer times', 'error');
   }
@@ -54,12 +59,21 @@ async function savePrayerTimes() {
     });
     
     if (success) {
-      showMessage('Prayer times saved successfully!', 'success');
+      showMessage('Settings saved successfully!', 'success');
     } else {
       showMessage('Error saving prayer times', 'error');
     }
   } catch (error) {
     showMessage('Error saving prayer times', 'error');
+  }
+}
+
+async function saveAutoStart() {
+  try {
+    const enabled = autoStartToggle.checked;
+    const success = await window.electronAPI.setAutoStart(enabled);
+  } catch (error) {
+    showMessage('Error saving auto-start setting', 'error');
   }
 }
 
@@ -70,6 +84,7 @@ function closeWindow() {
 // Event listeners
 saveButton.addEventListener('click', savePrayerTimes);
 cancelButton.addEventListener('click', closeWindow);
+autoStartToggle.addEventListener('change', saveAutoStart);
 
 // Load times when page loads
 window.addEventListener('load', loadPrayerTimes);

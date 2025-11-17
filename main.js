@@ -19,9 +19,21 @@ function initDataFile() {
       zuhr: "13:10",
       asr: "16:00",
       maghrib: "17:30",
-      isha: "19:30"
+      isha: "19:30",
+      autoStart: false
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(defaultData, null, 2));
+  } else {
+    // Ensure autoStart field exists in existing data
+    try {
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      if (data.autoStart === undefined) {
+        data.autoStart = false;
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+      }
+    } catch (error) {
+      console.error('Error updating data file:', error);
+    }
   }
 }
 
@@ -32,14 +44,51 @@ function getPrayerTimes() {
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading prayer times:', error);
-    return {fajr:"5:00", zuhr: "13:10", asr: "16:00", maghrib: "17:30", isha: "19:30" };
+    return {fajr:"5:00", zuhr: "13:10", asr: "16:00", maghrib: "17:30", isha: "19:30", autoStart: false };
+  }
+}
+
+// Get auto-start setting
+function getAutoStart() {
+  try {
+    const data = getPrayerTimes();
+    return data.autoStart || false;
+  } catch (error) {
+    console.error('Error reading auto-start setting:', error);
+    return false;
+  }
+}
+
+// Set auto-start setting
+function setAutoStart(enabled) {
+  try {
+    const data = getPrayerTimes();
+    data.autoStart = enabled;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    
+    // Update system auto-start setting
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+      openAsHidden: true
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error setting auto-start:', error);
+    return false;
   }
 }
 
 // Save prayer times to file
 function savePrayerTimes(times) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(times, null, 2));
+    // Preserve autoStart setting when saving prayer times
+    const existingData = getPrayerTimes();
+    const dataToSave = {
+      ...times,
+      autoStart: existingData.autoStart !== undefined ? existingData.autoStart : false
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
     scheduleNotifications(times);
     return true;
   } catch (error) {
@@ -135,7 +184,7 @@ function createSettingsWindow() {
 
   settingsWindow = new BrowserWindow({
     width: 500,
-    height: 700,
+    height: 950,
     resizable: false,
     maximizable: false,
     webPreferences: {
@@ -267,6 +316,14 @@ ipcMain.handle('save-prayer-times', (event, times) => {
   return savePrayerTimes(times);
 });
 
+ipcMain.handle('get-auto-start', () => {
+  return getAutoStart();
+});
+
+ipcMain.handle('set-auto-start', (event, enabled) => {
+  return setAutoStart(enabled);
+});
+
 ipcMain.on('close-overlay', () => {
   if (overlayWindow) {
     overlayWindow.close();
@@ -277,6 +334,14 @@ ipcMain.on('close-overlay', () => {
 app.whenReady().then(() => {
   try {
     initDataFile();
+    
+    // Set auto-start based on saved preference
+    const autoStartEnabled = getAutoStart();
+    app.setLoginItemSettings({
+      openAtLogin: autoStartEnabled,
+      openAsHidden: true
+    });
+    
     createTray();
     startTimeCheck();
     

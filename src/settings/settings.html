@@ -36,6 +36,16 @@
         <input type="time" id="ishaTime" class="time-input" required>
       </div>
       
+      <div class="form-group">
+        <div class="toggle-group">
+          <label for="autoStartToggle" class="toggle-label">Start automatically after reboot:</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoStartToggle" class="toggle-input">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      
       <div class="button-group">
         <button id="saveButton" class="btn btn-primary">Save Settings</button>
         <button id="cancelButton" class="btn btn-secondary">Cancel</button>
@@ -45,7 +55,7 @@
     </div>
     
     <div class="info">
-      <p>⏰ Times are in 24-hour format (HH:MM)</p>
+      <p>⏰ Times are in 12-hour format (HH:MM)</p>
       <p>📱 The app runs in the system tray</p>
       <p>🔔 Overlay will appear at the set times</p>
     </div>
