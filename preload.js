@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   savePrayerTimes: (times) => ipcRenderer.invoke('save-prayer-times', times),
   getAutoStart: () => ipcRenderer.invoke('get-auto-start'),
   setAutoStart: (enabled) => ipcRenderer.invoke('set-auto-start', enabled),
+  isAdmin: () => ipcRenderer.invoke('is-admin'),
+  broadcastMessage: (message) => ipcRenderer.invoke('broadcast-message', message),
   closeOverlay: () => ipcRenderer.send('close-overlay')
 });
