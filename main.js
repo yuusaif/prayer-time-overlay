@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { scheduleNotifications, clearScheduledNotifications } = require('./src/notifications');
 
 let tray = null;
 let overlayWindow = null;
@@ -39,6 +40,7 @@ function getPrayerTimes() {
 function savePrayerTimes(times) {
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(times, null, 2));
+    scheduleNotifications(times);
     return true;
   } catch (error) {
     console.error('Error saving prayer times:', error);
@@ -185,6 +187,10 @@ app.whenReady().then(() => {
     initDataFile();
     createTray();
     startTimeCheck();
+    
+    // Schedule notifications for all prayer times
+    const prayerTimes = getPrayerTimes();
+    scheduleNotifications(prayerTimes);
   } catch (error) {
     console.error('Error during app initialization:', error);
     // Try to show settings window as fallback
@@ -211,6 +217,7 @@ app.on('before-quit', () => {
   if (checkInterval) {
     clearInterval(checkInterval);
   }
+  clearScheduledNotifications();
 });
 
 // macOS specific
