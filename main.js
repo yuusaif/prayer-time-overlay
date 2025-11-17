@@ -49,9 +49,24 @@ function savePrayerTimes(times) {
 }
 
 // Create overlay window
-function createOverlay() {
+function createOverlay(prayerName = 'Prayer Time', prayerTime = '') {
   if (overlayWindow) {
     overlayWindow.show();
+    // Update prayer info if window already exists
+    const nameStr = JSON.stringify(String(prayerName || 'Prayer Time'));
+    const timeStr = JSON.stringify(String(prayerTime || ''));
+    overlayWindow.webContents.executeJavaScript(`
+      (function() {
+        try {
+          var nameEl = document.getElementById('prayerName');
+          var timeEl = document.getElementById('prayerTime');
+          if (nameEl) nameEl.textContent = ${nameStr};
+          if (timeEl) timeEl.textContent = ${timeStr};
+        } catch(e) {
+          console.error('Error updating prayer info:', e);
+        }
+      })();
+    `).catch(err => console.error('Error executing script:', err));
     return;
   }
 
@@ -75,7 +90,33 @@ function createOverlay() {
     }
   });
 
+  // Load the overlay HTML
   overlayWindow.loadFile(path.join(__dirname, 'src', 'overlay', 'overlay.html'));
+  
+  // Set prayer info after page loads (with a small delay to ensure DOM is ready)
+  overlayWindow.webContents.once('did-finish-load', () => {
+    setTimeout(() => {
+      const nameStr = JSON.stringify(String(prayerName || 'Prayer Time'));
+      const timeStr = JSON.stringify(String(prayerTime || ''));
+      overlayWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            var nameEl = document.getElementById('prayerName');
+            var timeEl = document.getElementById('prayerTime');
+            if (nameEl) {
+              nameEl.textContent = ${nameStr};
+            }
+            if (timeEl) {
+              timeEl.textContent = ${timeStr};
+            }
+          } catch(e) {
+            console.error('Error setting prayer info:', e);
+          }
+        })();
+      `).catch(err => console.error('Error executing script:', err));
+    }, 150);
+  });
+  
   overlayWindow.setAlwaysOnTop(true, 'screen-saver');
   overlayWindow.setVisibleOnAllWorkspaces(true);
   overlayWindow.setFullScreenable(true);
@@ -117,9 +158,20 @@ function checkPrayerTime() {
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   
   const prayerTimes = getPrayerTimes();
+  const prayerNames = {
+    fajr: 'Fajr',
+    zuhr: 'Zuhr',
+    asr: 'Asr',
+    maghrib: 'Maghrib',
+    isha: 'Isha'
+  };
   
-  if (currentTime === prayerTimes.fajr || currentTime === prayerTimes.zuhr || currentTime === prayerTimes.asr || currentTime === prayerTimes.maghrib || currentTime === prayerTimes.isha) {
-    createOverlay();
+  // Check which prayer time matches
+  for (const [key, time] of Object.entries(prayerTimes)) {
+    if (currentTime === time) {
+      createOverlay(prayerNames[key] || key, time);
+      break;
+    }
   }
 }
 
