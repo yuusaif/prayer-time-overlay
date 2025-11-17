@@ -1,115 +1,98 @@
+<div align="center">
+  <img src="src/assets/banner.png" alt="Prayer Time Overlay" width="600">
+</div>
+
 # Prayer Time Overlay
 
-A modern, full-screen desktop overlay app designed to quietly remind everyone in your office when it’s time for Zuhr and Asr prayers. At the designated times, a subtle overlay appears on all screens, ensuring everyone is notified simultaneously—eliminating the need for verbal reminders or disruptions. If you have urgent tasks, you can easily dismiss the overlay with a single click or press of a key.
+> A modern desktop app that displays full-screen prayer time reminders across all screens, ensuring everyone is notified simultaneously without disruptions.
 
-## Features
+[![Electron](https://img.shields.io/badge/Electron-28.0.0-blue.svg)](https://www.electronjs.org/)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
-- 🕌 **Prayer Time Reminders**: Full-screen overlay at Zuhr and Asr times
-- 🖥️ **Cross-Platform**: Works on Windows, macOS, and Linux
-- ⚙️ **Easy Configuration**: Simple settings window to set prayer times
-- 🔔 **Background App**: Runs silently in system tray
-- ⌨️ **Quick Dismiss**: Press ESC or click button to close overlay
-- 🎨 **Beautiful UI**: Modern, clean design with animations
+---
 
-## Installation
+## ✨ Features
 
-### Prerequisites
-- Node.js v16 or higher
+- 🕌 **Full-Screen Overlay** - Displays prayer reminders on all screens simultaneously
+- ⏰ **Custom Prayer Times** - Configure Fajr, Zuhr, Asr, Maghrib, and Isha times
+- ᎗ **System Tray Integration** - Runs silently in the background
+- 🚀 **Auto-Start on Boot** - Option to start automatically after reboot
+- ⌨️ **Quick Dismiss** - Press ESC or click to close overlay
+- 🎨 **Modern UI** - Clean, beautiful interface with smooth animations
+- 🌍 **Cross-Platform** - Works on Windows, macOS, and Linux
+- 🔔 **Helpful Notifications** - To remind us to get ready, perform Udhu
 
-### Setup
-\`\`\`bash
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
 # Clone the repository
 git clone https://github.com/YOUR_USERNAME/prayer-time-overlay.git
-
-# Navigate to project
 cd prayer-time-overlay
 
 # Install dependencies
 npm install
 
-# Create icon placeholder
-node create-icon.js
-
 # Run the app
 npm start
-\`\`\`
+```
 
-## Usage
+### Usage
 
-1. **Start the app**: Run `npm start`
-2. **Configure times**: Right-click tray icon → Settings
-3. **Set Zuhr and Asr times** in 24-hour format (e.g., 13:00, 16:30)
-4. **Save settings**
-5. The overlay will automatically appear at prayer times
+1. **Launch the app** - The app runs in your system tray
+2. **Open Settings** - Right-click the tray icon → Settings
+3. **Configure Times** - Set your prayer times in 24-hour format (HH:MM)
+4. **Enable Auto-Start** (optional) - Toggle "Start automatically after reboot"
+5. **Save Settings** - Your preferences are saved automatically
 
-## Building for Distribution
+The overlay will appear automatically at the configured prayer times.
 
-\`\`\`bash
-# Build for Windows
-npm run build:win
+---
 
-# Build for macOS
-npm run build:mac
+## 📦 Building
 
-# Build for Linux
-npm run build:linux
+```bash
+# Build for your platform
+npm run build:win    # Windows
+npm run build:mac    # macOS
+npm run build:linux  # Linux
 
 # Build for all platforms
 npm run build
-\`\`\`
+```
 
-## Configuration
+Built files will be in the `dist/` directory.
 
-Prayer times are stored locally in:
+---
+
+## ⚙️ Configuration
+
+Prayer times and settings are stored locally:
+
 - **Windows**: `%APPDATA%/prayer-time-overlay/prayer-times.json`
 - **macOS**: `~/Library/Application Support/prayer-time-overlay/prayer-times.json`
 - **Linux**: `~/.config/prayer-time-overlay/prayer-times.json`
 
-## Tech Stack
+---
 
-- Electron 28
-- HTML/CSS/JavaScript
-- electron-builder
+## 🛠️ Tech Stack
 
-##Complete Flow Diagram
-1. App Starts
-   ↓
-2. initDataFile() → Creates prayer-times.json if missing
-   ↓
-3. createTray() → Creates system tray icon with menu
-   ↓
-4. startTimeCheck() → Starts 60-second interval
-   ↓
-5. checkPrayerTime() → Every minute:
-   ├─ Get current time (HH:MM)
-   ├─ Load prayer times from file
-   └─ If match → createOverlay()
-   ↓
-6. createOverlay() → Creates fullscreen window
-   ├─ Loads overlay.html
-   ├─ User sees prayer message
-   └─ User can close via ESC or button
-   ↓
-7. closeOverlay() → IPC sends 'close-overlay'
-   └─ Main process closes window
+- **Electron 28** - Cross-platform desktop framework
+- **HTML/CSS/JavaScript** - Modern web technologies
+- **electron-builder** - Application packaging
 
-Settings Flow:
-User clicks "Settings" in tray
-   ↓
-createSettingsWindow() → Opens settings window
-   ↓
-loadPrayerTimes() → Fetches current times via IPC
-   ↓
-User edits times → Clicks Save
-   ↓
-savePrayerTimes() → Saves via IPC
-   ↓
-Main process writes to file → Success message shown
+---
 
-## License
+## 📝 License
 
 Not configured yet.
 
-## Contributing
+---
 
-Pull requests are welcome! For major changes, please open an issue first.
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
